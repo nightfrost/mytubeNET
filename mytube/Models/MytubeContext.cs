@@ -35,6 +35,8 @@ namespace mytube.Models
             {
                 video.HasKey(video => video.ID);
                 video.Property(video => video.Name).IsRequired();
+                video.Property(video => video.Poster);
+                video.Property(video => video.ReleaseDate);
                 video.Property(video => video.Data).IsRequired();
                 video.HasOne(u => u.User)
                     .WithMany(v => v.Videos);
