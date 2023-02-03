@@ -83,7 +83,7 @@ namespace mytube.Controllers
             _context.Users.Add(userItem);
             await _context.SaveChangesAsync();
 
-            HttpContext.Response.Headers.Add("Access-Control-Allow-Origin", "http://localhost:3000");
+            HttpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");
 
             return CreatedAtAction("GetUserItem", new { id = userItem.ID }, userItem);
         }
