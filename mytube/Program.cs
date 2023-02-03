@@ -17,6 +17,18 @@ var serverVersion = new MySqlServerVersion(new Version(8, 0, 31));
 
 // Add services to the container.
 
+builder.Services.AddCors();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        builder =>
+        {
+            builder.WithOrigins("*", "*")
+                                .AllowAnyHeader()
+                                .AllowAnyMethod();
+        });
+});
+
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
@@ -60,6 +72,16 @@ if (!app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+
+app.UseCors();
+app.UseCors(builder =>
+{
+    builder
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader();
+});
 
 app.UseHttpsRedirection();
 

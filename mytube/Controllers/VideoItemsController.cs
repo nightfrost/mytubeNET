@@ -11,7 +11,7 @@ using mytube.Models;
 namespace mytube.Controllers
 {
     //[EnableCors("AllowSpecificOrigin")] - Not sure if this is possible
-    [EnableCors("AllowAll")]
+    [EnableCors]
     [Route("api/video")]
     [ApiController]
     public class VideoItemsController : ControllerBase
