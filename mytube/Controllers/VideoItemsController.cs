@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,8 @@ using mytube.Models;
 
 namespace mytube.Controllers
 {
+    //[EnableCors("AllowSpecificOrigin")] - Not sure if this is possible
+    [EnableCors("AllowAll")]
     [Route("api/video")]
     [ApiController]
     public class VideoItemsController : ControllerBase
