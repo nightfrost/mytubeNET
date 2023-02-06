@@ -3,6 +3,7 @@ using mytube.Models;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Net;
+using mytube.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +46,7 @@ builder.Services.AddDbContext<MytubeContext>(
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IVideoItemService, VideoItemsServiceImpl>();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.KnownProxies.Add(IPAddress.Parse("178.62.212.197"));

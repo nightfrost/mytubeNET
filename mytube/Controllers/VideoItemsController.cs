@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using mytube.Models;
+using mytube.Services;
 
 namespace mytube.Controllers
 {
@@ -17,17 +18,19 @@ namespace mytube.Controllers
     public class VideoItemsController : ControllerBase
     {
         private readonly MytubeContext _context;
+        private readonly IVideoItemService _videoItemService;
 
-        public VideoItemsController(MytubeContext context)
+        public VideoItemsController(MytubeContext context, IVideoItemService videoItemService)
         {
             _context = context;
+            _videoItemService = videoItemService;
         }
 
         // GET: api/VideoItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<VideoItem>>> GetVideos()
+        public async Task<IEnumerable<VideoItem>> GetVideos()
         {
-            return await _context.Videos.ToListAsync();
+            return await _videoItemService.GetVideos();
         }
 
         // GET: api/VideoItems/5
