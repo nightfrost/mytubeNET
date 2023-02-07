@@ -13,19 +13,20 @@ namespace mytube.Services
             _context = context;
         }
 
-        public async Task<String> DeleteVideoItem(int id)
+        public async Task<ActionResult<String>> DeleteVideoItem(int id)
         {
             try
             {
                 var videoItem = await _context.Videos.FindAsync(id);
                 if (videoItem == null)
                 {
-                    return String.Format("No user with id: {0} exists.", id);
+                    return String.Format("001- No user with id: {0} exists.", id);
                 }
                 else
                 {
                     _context.Videos.Remove(videoItem);
-                    return String.Format("User with id: {0} has been deleted.", id);
+                    await _context.SaveChangesAsync();
+                    return String.Format("002- User with id: {0} has been deleted.", id);
                 }
             }
             catch (Exception e)
@@ -33,30 +34,21 @@ namespace mytube.Services
                 Console.WriteLine("Something went horribly wrong... See below for info.");
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
-                return "User was not deleted.";
+                return "003- User was not deleted.";
             }
         }
 
-        public async Task<VideoItem> GetVideoItem(int id)
+        public async Task<ActionResult<VideoItem>> GetVideoItem(int id)
         {
-            var videoItem = await _context.Videos.Include(p => p.User).FirstAsync(p => p.ID == id);
-
-            if (videoItem == null)
-            {
-                videoItem = new VideoItem();
-                return videoItem;
-            } else
-            {
-                return videoItem;
-            }
+            return await _context.Videos.Include(p => p.User).FirstAsync(p => p.ID == id);
         }
 
-        public async Task<IEnumerable<VideoItem>> GetVideos()
+        public async Task<ActionResult<IEnumerable<VideoItem>>> GetVideos()
         {
             return await _context.Videos.ToListAsync();
         }
 
-        public async Task<VideoItem> PostVideoItem(HttpRequest request)
+        public async Task<ActionResult<VideoItem>> PostVideoItem(HttpRequest request)
         {
             VideoItem videoItem = new VideoItem();
             byte[] fileAsByteArray;
@@ -101,9 +93,14 @@ namespace mytube.Services
             }
         }
 
-        public async Task<String> PutVideoItem(int id, VideoItem videoItem)
+        public async Task<ActionResult<VideoItem>> PutVideoItem(int id, VideoItem videoItem)
         {
             var videoItemFromDB = await _context.Videos.FindAsync(id);
+
+            if (videoItemFromDB == null)
+            {
+                return videoItemFromDB;
+            }
 
             videoItemFromDB = videoItem;
 
@@ -111,14 +108,16 @@ namespace mytube.Services
             {
                 _context.Entry(videoItemFromDB).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-                return "Video updated.";
+                return videoItemFromDB;
             }
             catch (Exception e)
             {
+                //return null reference and handle in controller.
+                VideoItem tempItem = null;
                 Console.WriteLine("Updating video with ID: {0} failed. See stack.");
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
-                return "Video update failed. See stack.";
+                return tempItem;
             }
         }
 

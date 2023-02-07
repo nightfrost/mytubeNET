@@ -5,15 +5,15 @@ namespace mytube.Services
 {
     public interface IVideoItemService
     {
-        public Task<IEnumerable<VideoItem>> GetVideos();
+        public Task<ActionResult<IEnumerable<VideoItem>>> GetVideos();
 
-        public Task<VideoItem> GetVideoItem(int id);
+        public Task<ActionResult<VideoItem>> GetVideoItem(int id);
 
-        public Task<String> PutVideoItem(int id, VideoItem videoItem);
+        public Task<ActionResult<VideoItem>> PutVideoItem(int id, VideoItem videoItem);
 
-        public Task<VideoItem> PostVideoItem(HttpRequest httpRequest);
+        public Task<ActionResult<VideoItem>> PostVideoItem(HttpRequest httpRequest);
 
-        public Task<String> DeleteVideoItem(int id);
+        public Task<ActionResult<String>> DeleteVideoItem(int id);
 
         public bool VideoItemExists(int id);
     }

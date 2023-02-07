@@ -17,18 +17,16 @@ namespace mytube.Controllers
     [ApiController]
     public class VideoItemsController : ControllerBase
     {
-        private readonly MytubeContext _context;
         private readonly IVideoItemService _videoItemService;
 
-        public VideoItemsController(MytubeContext context, IVideoItemService videoItemService)
+        public VideoItemsController(IVideoItemService videoItemService)
         {
-            _context = context;
             _videoItemService = videoItemService;
         }
 
         // GET: api/VideoItems
         [HttpGet]
-        public async Task<IEnumerable<VideoItem>> GetVideos()
+        public async Task<ActionResult<IEnumerable<VideoItem>>> GetVideos()
         {
             return await _videoItemService.GetVideos();
         }
@@ -37,45 +35,19 @@ namespace mytube.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<VideoItem>> GetVideoItem(int id)
         {
-            var videoItem = await _context.Videos.Include(p => p.User).FirstAsync(p => p.ID == id);
+            var result = await _videoItemService.GetVideoItem(id);
 
-            if (videoItem == null)
-            {
-                return NotFound();
-            }
-
-            return videoItem;
+            return result.Value == null ? NotFound() : result;
         }
 
         // PUT: api/VideoItems/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutVideoItem(int id, VideoItem videoItem)
+        public async Task<ActionResult<VideoItem>> PutVideoItem(int id, VideoItem videoItem)
         {
-            if (id != videoItem.ID)
-            {
-                return BadRequest();
-            }
+            var result = await _videoItemService.PutVideoItem(id, videoItem);
 
-            _context.Entry(videoItem).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!VideoItemExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return result.Value == null ? NotFound() : result;
         }
 
         // POST: api/VideoItems
@@ -83,63 +55,18 @@ namespace mytube.Controllers
         [HttpPost, DisableRequestSizeLimit]
         public async Task<ActionResult<VideoItem>> PostVideoItem()
         {
-            VideoItem videoItem = new VideoItem();
-            var tempUserItem = await _context.Users.FindAsync(2L);
-            try
-            {
-                byte[] fileAsByteArray;
-                var file = Request.Form.Files[0];
-                string name = Request.Form.Keys.ElementAt(0);
-                string userId = Request.Form.Keys.ElementAt(0);
-                Console.WriteLine(name);
-                Console.WriteLine(userId);
+            var result = await _videoItemService.PostVideoItem(Request);
 
-                if (file.Length > 0)
-                {
-                    using (var ms = new MemoryStream())
-                    {
-                        file.CopyTo(ms);
-                        fileAsByteArray = ms.ToArray();
-                        videoItem.Data = fileAsByteArray;
-                        videoItem.Name = name;
-                        
-                        videoItem.User = tempUserItem;
-                    }
-                }
-
-                _context.Videos.Add(videoItem);
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction("GetVideoItem", new { id = videoItem.ID }, videoItem);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.StackTrace);
-            }
-            
-
-            return NoContent();
+            return result == null ? BadRequest() : result;
         }
 
         // DELETE: api/VideoItems/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteVideoItem(int id)
+        public async Task<ActionResult<string>> DeleteVideoItem(int id)
         {
-            var videoItem = await _context.Videos.FindAsync(id);
-            if (videoItem == null)
-            {
-                return NotFound();
-            }
+            var result = await _videoItemService.DeleteVideoItem(id);
 
-            _context.Videos.Remove(videoItem);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool VideoItemExists(int id)
-        {
-            return _context.Videos.Any(e => e.ID == id);
+            return result.Value.Contains("002-") ? result.Value : NotFound(result.Value);
         }
     }
 }
