@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using mytube.Models;
+using mytube.Services;
 
 namespace mytube.Controllers
 {
@@ -16,63 +17,39 @@ namespace mytube.Controllers
     [ApiController]
     public class UserItemsController : ControllerBase
     {
-        private readonly MytubeContext _context;
+        private readonly IUserItemsService _service;
 
-        public UserItemsController(MytubeContext context)
+        public UserItemsController(IUserItemsService service)
         {
-            _context = context;
+            _service = service;
         }
 
         // GET: api/UserItems
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserItem>>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            return await _service.GetUsers();
+        }
+
+        [HttpPost("/login")]
+        public async Task<ActionResult<UserItem>> Login(string email, string password)
+        {
+            return await _service.Login(email, password);
         }
 
         // GET: api/UserItems/5
         [HttpGet("{id}")]
         public async Task<ActionResult<UserItem>> GetUserItem(long id)
         {
-            var userItem = await _context.Users.FindAsync(id);
-
-            if (userItem == null)
-            {
-                return NotFound();
-            }
-
-            return userItem;
+            return await _service.GetUserItem(id);
         }
 
         // PUT: api/UserItems/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUserItem(long id, UserItem userItem)
+        public async Task<ActionResult<UserItem>> PutUserItem(long id, UserItem userItem)
         {
-            if (id != userItem.ID)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(userItem).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserItemExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return await _service.PutUserItem(id, userItem);
         }
 
         // POST: api/UserItems
@@ -80,33 +57,27 @@ namespace mytube.Controllers
         [HttpPost]
         public async Task<ActionResult<UserItem>> PostUserItem(UserItem userItem)
         {
-            _context.Users.Add(userItem);
-            await _context.SaveChangesAsync();
-
-            HttpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-
-            return CreatedAtAction("GetUserItem", new { id = userItem.ID }, userItem);
+            return await _service.PostUserItem(userItem);
         }
 
         // DELETE: api/UserItems/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUserItem(long id)
+        public async Task<ActionResult<string>> DeleteUserItem(long id)
         {
-            var userItem = await _context.Users.FindAsync(id);
-            if (userItem == null)
-            {
-                return NotFound();
-            }
-
-            _context.Users.Remove(userItem);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return await _service.DeleteUserItem(id);
         }
 
-        private bool UserItemExists(long id)
+        [HttpPost("userItems")]
+        public async Task<ActionResult<UserItem>> CreateUser(UserItem userItem)
         {
-            return _context.Users.Any(e => e.ID == id);
+            var result = await _service.CreateUser(userItem);
+
+            if (result.Value == null) {
+                return BadRequest(result.Value);
+            } else
+            {
+                return CreatedAtAction("GetUserItem", new { id = result.Value.ID}, result.Value);
+            }
         }
     }
 }
