@@ -20,13 +20,13 @@ namespace mytube.Services
                 var videoItem = await _context.Videos.FindAsync(id);
                 if (videoItem == null)
                 {
-                    return String.Format("001- No user with id: {0} exists.", id);
+                    return String.Format("001- No video with id: {0} exists.", id);
                 }
                 else
                 {
                     _context.Videos.Remove(videoItem);
                     await _context.SaveChangesAsync();
-                    return String.Format("002- User with id: {0} has been deleted.", id);
+                    return String.Format("002- Video with id: {0} has been deleted.", id);
                 }
             }
             catch (Exception e)

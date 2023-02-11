@@ -40,15 +40,16 @@ namespace mytube.Controllers
             return result.Value == null ? NotFound() : result;
         }
 
+        // PUT not needed.
         // PUT: api/VideoItems/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<ActionResult<VideoItem>> PutVideoItem(int id, VideoItem videoItem)
-        {
-            var result = await _videoItemService.PutVideoItem(id, videoItem);
+        //[HttpPut("{id}"), DisableRequestSizeLimit]
+        //public async Task<ActionResult<VideoItem>> PutVideoItem(int id, [FromForm]VideoItem videoItem)
+        //{
+        //    var result = await _videoItemService.PutVideoItem(id, videoItem);
 
-            return result.Value == null ? NotFound() : result;
-        }
+        //    return result.Value == null ? NotFound() : result;
+        //}
 
         // POST: api/VideoItems
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754

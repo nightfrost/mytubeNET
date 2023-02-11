@@ -47,6 +47,7 @@ builder.Services.AddDbContext<MytubeContext>(
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IVideoItemService, VideoItemsServiceImpl>();
+builder.Services.AddScoped<IUserItemsService, UserItemsServiceImpl>();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.KnownProxies.Add(IPAddress.Parse("178.62.212.197"));
