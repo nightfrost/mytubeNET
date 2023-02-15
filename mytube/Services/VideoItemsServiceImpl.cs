@@ -4,7 +4,7 @@ using mytube.Models;
 
 namespace mytube.Services
 {
-    public class VideoItemsServiceImpl : IVideoItemService
+    public class VideoItemsServiceImpl : ControllerBase, IVideoItemService
     {
         private readonly MytubeContext _context;
 
@@ -20,13 +20,13 @@ namespace mytube.Services
                 var videoItem = await _context.Videos.FindAsync(id);
                 if (videoItem == null)
                 {
-                    return String.Format("001- No video with id: {0} exists.", id);
+                    return NotFound(String.Format("001- No video with id: {0} exists.", id));
                 }
                 else
                 {
                     _context.Videos.Remove(videoItem);
                     await _context.SaveChangesAsync();
-                    return String.Format("002- Video with id: {0} has been deleted.", id);
+                    return Ok(String.Format("002- Video with id: {0} has been deleted.", id));
                 }
             }
             catch (Exception e)
@@ -34,18 +34,34 @@ namespace mytube.Services
                 Console.WriteLine("Something went horribly wrong... See below for info.");
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
-                return "003- User was not deleted.";
+                return BadRequest("003- User was not deleted.");
             }
         }
 
         public async Task<ActionResult<VideoItem>> GetVideoItem(int id)
         {
-            return await _context.Videos.Include(p => p.User).FirstAsync(p => p.ID == id);
+            var item = await _context.Videos.Include(p => p.User).FirstAsync(p => p.ID == id);
+
+            if (item == null)
+            {
+                return NotFound(item);
+            } else
+            {
+                return Ok(item);
+            }
         }
 
         public async Task<ActionResult<IEnumerable<VideoItem>>> GetVideos()
         {
-            return await _context.Videos.ToListAsync();
+            var list = await _context.Videos.ToListAsync();
+
+            if (list.Count > 0)
+            {
+                return Ok(list);
+            } else
+            {
+                return NotFound(list);
+            }
         }
 
         public async Task<ActionResult<VideoItem>> PostVideoItem(HttpRequest request)
@@ -63,7 +79,7 @@ namespace mytube.Services
                 if (userItem == null)
                 {
                     Console.WriteLine("User not found on create video. Returning empty video item.");
-                    return videoItem;
+                    return NotFound(videoItem);
                 }
 
                 if (file.Length > 0)
@@ -81,7 +97,7 @@ namespace mytube.Services
                 _context.Videos.Add(videoItem);
                 await _context.SaveChangesAsync();
 
-                return videoItem;
+                return Ok(videoItem);
             }
             catch (Exception ex)
             {
@@ -89,7 +105,7 @@ namespace mytube.Services
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(ex.StackTrace);
                 Console.WriteLine(videoItem.ToString());
-                return videoItem;
+                return BadRequest(videoItem);
             }
         }
 
@@ -99,7 +115,7 @@ namespace mytube.Services
 
             if (videoItemFromDB == null)
             {
-                return videoItemFromDB;
+                return NotFound(videoItemFromDB);
             }
 
             videoItemFromDB = videoItem;
@@ -108,7 +124,7 @@ namespace mytube.Services
             {
                 _context.Entry(videoItemFromDB).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-                return videoItemFromDB;
+                return Ok(videoItemFromDB);
             }
             catch (Exception e)
             {
@@ -117,7 +133,7 @@ namespace mytube.Services
                 Console.WriteLine("Updating video with ID: {0} failed. See stack.");
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
-                return tempItem;
+                return BadRequest(tempItem);
             }
         }
 
