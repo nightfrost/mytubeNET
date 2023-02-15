@@ -4,7 +4,7 @@ using mytube.Models;
 
 namespace mytube.Services
 {
-    public class UserItemsServiceImpl : IUserItemsService
+    public class UserItemsServiceImpl : ControllerBase,IUserItemsService
     {
         private readonly MytubeContext _context;
 
@@ -20,18 +20,18 @@ namespace mytube.Services
 
             if (checkForExistingEmail != null)
             {
-                return new UserItem();
+                return BadRequest(new UserItem());
             }
 
             if (checkForExistingUsername != null)
             {
-                return new UserItem();
+                return BadRequest(new UserItem());
             }
 
             var user = await _context.Users.AddAsync(userItem);
             await _context.SaveChangesAsync();
 
-            return user.Entity;
+            return Ok(user.Entity);
         }
 
         public async Task<ActionResult<string>> DeleteUserItem(long id)
@@ -43,32 +43,40 @@ namespace mytube.Services
                 {
                     _context.Users.Remove(userItem);
                     _context.SaveChanges();
-                    return String.Format("Deleted user with id: {0}", userItem.ID);
+                    return Ok(String.Format("Deleted user with id: {0}", userItem.ID));
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(String.Format("Fatal error: {0}", e.Message));
                     Console.WriteLine(e.StackTrace);
-                    return String.Format("Failed to delete user with id: {0}", id);
+                    return BadRequest(String.Format("Failed to delete user with id: {0}", id));
                 }
             }
-            return String.Format("No user with ID: {0}", id);
+            return NotFound(String.Format("No user with ID: {0}", id));
         }
 
         public async Task<ActionResult<UserItem>> GetUserItem(long id)
         {
             if (_context.Users.Any(x => x.ID == id))
             {
-                return await _context.Users.FindAsync(id);
+                return Ok(await _context.Users.FindAsync(id));
             } else
             {
-                return new UserItem();
+                return NotFound(new UserItem());
             }
         }
 
         public async Task<ActionResult<IEnumerable<UserItem>>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            var list = await _context.Users.ToListAsync();
+
+            if (list.Count > 0)
+            {
+                return Ok(list);
+            } else
+            {
+                return NotFound(list);
+            }
         }
 
         public async Task<ActionResult<UserItem>> Login(string email, string password)
@@ -87,12 +95,12 @@ namespace mytube.Services
                 tempUserItem.enabled= true;
                 await PostUserItem(tempUserItem);
                 await _context.SaveChangesAsync();
-                return tempUserItem;
+                return Ok(tempUserItem);
             } else if (user.password == password) {
-                return user;
+                return Ok(user);
             } else
             {
-                return new UserItem();
+                return BadRequest(new UserItem());
             }
         }
 
@@ -101,7 +109,7 @@ namespace mytube.Services
             var user = _context.Users.Add(userItem);
             await _context.SaveChangesAsync();
 
-            return user.Entity;
+            return Ok(user.Entity);
         }
 
         public async Task<ActionResult<UserItem>> PutUserItem(long id, UserItem userItem)
@@ -110,7 +118,7 @@ namespace mytube.Services
 
             if (userItemFromDB== null)
             {
-                return userItemFromDB;
+                return NotFound(userItemFromDB);
             }
 
             userItemFromDB = userItem;
@@ -119,7 +127,7 @@ namespace mytube.Services
             {
                 _context.Entry(userItemFromDB).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-                return userItemFromDB;
+                return Ok(userItemFromDB);
             }
             catch (Exception e)
             {
@@ -128,7 +136,7 @@ namespace mytube.Services
                 Console.WriteLine("Updating video with ID: {0} failed. See stack.");
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
-                return tempItem;
+                return BadRequest(tempItem);
             }
         }
 
