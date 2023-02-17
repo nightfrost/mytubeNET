@@ -18,6 +18,7 @@ namespace mytube.Controllers
     public class VideoItemsController : ControllerBase
     {
         private readonly IVideoItemService _videoItemService;
+       
 
         public VideoItemsController(IVideoItemService videoItemService)
         {
@@ -68,6 +69,25 @@ namespace mytube.Controllers
             var result = await _videoItemService.DeleteVideoItem(id);
 
             return result.Value.Contains("002-") ? result.Value : NotFound(result.Value);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetVideo(int id)
+        {
+            var videoItem = await _videoItemService.GetVideoItem(id);
+            if (videoItem == null)
+            {
+                return NotFound();
+            }
+
+            byte[] videoBytes = await _videoItemService.GetVideoFile(videoItem.FileName);
+            if (videoBytes == null)
+            {
+                return NotFound();
+            }
+
+            var stream = new MemoryStream(videoBytes);
+            return File(stream, "video/mp4", videoItem.FileName);
         }
     }
 }
